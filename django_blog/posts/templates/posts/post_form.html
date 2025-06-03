@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load form_filters %}
+
+{% block title %}Créer un article{% endblock %}
+
+{% block content %}
+<div class="flex justify-center">
+    <div class="w-full max-w-2xl bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-semibold mb-6 text-center text-gray-800">Créer un nouvel article</h2>
+
+        <form method="post" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="text-red-600 text-sm">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            {% for field in form.visible_fields %}
+                <div>
+                    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        {{ field.label }}
+                    </label>
+                    {{ field|add_class:"w-full mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" }}
+                    {% if field.errors %}
+                        <p class="text-sm text-red-600 mt-1">{{ field.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded">
+                Publier l’article
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
