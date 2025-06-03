@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: django_web
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    working_dir: /app/django_blog
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=blog_project.settings
+      - DATABASE_HOST=host.docker.internal   # Pour accéder à MySQL local depuis Docker
+      - DATABASE_NAME=blog_post
+      - DATABASE_USER=root
+      - DATABASE_PASSWORD=root
+
+# volumes:
+#   mysql_data:     # plus besoin si tu ne gères pas MySQL dans Docker
