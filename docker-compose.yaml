@@ -1,21 +1,86 @@
-version: '3.8'
+version: '3.9'
 
 services:
+  db:
+    image: mysql:8
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: blog_post
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: root
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: usebr
+      RABBITMQ_DEFAULT_PASS: password
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
   web:
     build: .
     container_name: django_web
-    command: python manage.py runserver 0.0.0.0:8000
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    working_dir: /app
     volumes:
-      - .:/app
-    working_dir: /app/django_blog
+      - ./django_blog:/app
+      - ./django_blog/media:/app/media  # Partage du dossier media pour les images
     ports:
       - "8000:8000"
     environment:
       - DJANGO_SETTINGS_MODULE=blog_project.settings
-      - DATABASE_HOST=host.docker.internal   # Pour accéder à MySQL local depuis Docker
+      - DATABASE_HOST=db
       - DATABASE_NAME=blog_post
       - DATABASE_USER=root
       - DATABASE_PASSWORD=root
+      - CELERY_BROKER_URL=amqp://usebr:password@rabbitmq:5672//
+    depends_on:
+      - db
+      - rabbitmq
 
-# volumes:
-#   mysql_data:     # plus besoin si tu ne gères pas MySQL dans Docker
+  celery:
+    build: .
+    container_name: django_celery
+    command: celery -A blog_project worker --loglevel=info
+    working_dir: /app
+    volumes:
+      - ./django_blog:/app
+      - ./django_blog/media:/app/media  # Même partage que web
+    environment:
+      - DJANGO_SETTINGS_MODULE=blog_project.settings
+      - DATABASE_HOST=db
+      - DATABASE_NAME=blog_post
+      - DATABASE_USER=root
+      - DATABASE_PASSWORD=root
+      - CELERY_BROKER_URL=amqp://usebr:password@rabbitmq:5672//
+    depends_on:
+      - web
+      - db
+      - rabbitmq
+
+volumes:
+  mysql_data:
+    driver: local
+
+
+    ##cfef wjfe pdvu fddh

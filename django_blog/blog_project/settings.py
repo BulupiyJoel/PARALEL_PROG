@@ -84,6 +84,14 @@ DATABASES = {
     }
 }
 
+# RabbitMQ
+CELERY_BROKER_URL = 'amqp://guest:guest@rabbitmq:5672//'
+
+
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -131,5 +139,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 LOGIN_URL = 'posts:login'
-LOGIN_REDIRECT_URL = 'posts:post_list'  # ou la page d’accueil
+LOGIN_REDIRECT_URL = 'posts:post_list'  # ou la page d'accueil
 LOGOUT_REDIRECT_URL = 'posts:login'
+
+# Email configuration (à personnaliser selon votre fournisseur SMTP)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # À remplacer par votre serveur SMTP
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'astronbulupiy@gmail.com'  # À remplacer
+EMAIL_HOST_PASSWORD = 'cfefwjfepdvufddh'       # À remplacer
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = 'engebaprospere@gmail.com'  # À remplacer

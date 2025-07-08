@@ -27,3 +27,7 @@ EXPOSE 8000
 
 # Commande de démarrage
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+
+
+## docker run --name mysql-container -e MYSQL_ROOT_PASSWORD=root -d mysql:9.0.39
+
