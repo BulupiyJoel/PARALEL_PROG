@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yaml -o k8s/
+    kompose.version: 1.31.2 (a92241f79)
+  labels:
+    io.kompose.service: phpmyadmin
+  name: phpmyadmin
+spec:
+  ports:
+    - name: "8080"
+      port: 8080
+      targetPort: 80
+  selector:
+    io.kompose.service: phpmyadmin

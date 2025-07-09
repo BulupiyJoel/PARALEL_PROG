@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yaml -o k8s/
+    kompose.version: 1.31.2 (a92241f79)
+  labels:
+    io.kompose.service: db
+  name: db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: db
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yaml -o k8s/
+        kompose.version: 1.31.2 (a92241f79)
+      labels:
+        io.kompose.network/paralel-prog-default: "true"
+        io.kompose.service: db
+    spec:
+      containers:
+        - env:
+            - name: MYSQL_DATABASE
+              value: blog_post
+            - name: MYSQL_ROOT_PASSWORD
+              value: root
+          image: mysql:8
+          name: mysql-db
+          ports:
+            - containerPort: 3306
+              hostPort: 3306
+              protocol: TCP
+          resources: {}
+          volumeMounts:
+            - mountPath: /var/lib/mysql
+              name: mysql-data
+      restartPolicy: Always
+      volumes:
+        - name: mysql-data
+          persistentVolumeClaim:
+            claimName: mysql-data

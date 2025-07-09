@@ -41,7 +41,7 @@ services:
     build: .
     container_name: django_web
     command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
-    working_dir: /app
+    working_dir: /app/django_blog
     volumes:
       - ./django_blog:/app
       - ./django_blog/media:/app/media  # Partage du dossier media pour les images

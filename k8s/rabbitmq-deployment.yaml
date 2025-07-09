@@ -1,40 +1,42 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yaml -o k8s/
+    kompose.version: 1.31.2 (a92241f79)
+  labels:
+    io.kompose.service: rabbitmq
   name: rabbitmq
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: rabbitmq
+      io.kompose.service: rabbitmq
+  strategy: {}
   template:
     metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yaml -o k8s/
+        kompose.version: 1.31.2 (a92241f79)
       labels:
-        app: rabbitmq
+        io.kompose.network/paralel-prog-default: "true"
+        io.kompose.service: rabbitmq
     spec:
       containers:
-      - name: rabbitmq
-        image: rabbitmq:3-management
-        env:
-        - name: RABBITMQ_DEFAULT_USER
-          value: "usebr"
-        - name: RABBITMQ_DEFAULT_PASS
-          value: "password"
-        ports:
-        - containerPort: 5672
-        - containerPort: 15672
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: rabbitmq
-spec:
-  type: NodePort
-  ports:
-  - name: amqp
-    port: 5672
-  - name: management
-    port: 15672
-    nodePort: 30083
-  selector:
-    app: rabbitmq
+        - env:
+            - name: RABBITMQ_DEFAULT_PASS
+              value: password
+            - name: RABBITMQ_DEFAULT_USER
+              value: usebr
+          image: rabbitmq:3-management
+          name: rabbitmq
+          ports:
+            - containerPort: 5672
+              hostPort: 5672
+              protocol: TCP
+            - containerPort: 15672
+              hostPort: 15672
+              protocol: TCP
+          resources: {}
+      restartPolicy: Always
+status: {}

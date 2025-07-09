@@ -1,38 +1,62 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: celery-worker
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yaml -o k8s/
+    kompose.version: 1.31.2 (a92241f79)
+  labels:
+    io.kompose.service: celery
+  name: celery
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: celery-worker
+      io.kompose.service: celery
+  strategy:
+    type: Recreate
   template:
     metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yaml -o k8s/
+        kompose.version: 1.31.2 (a92241f79)
       labels:
-        app: celery-worker
+        io.kompose.network/paralel-prog-default: "true"
+        io.kompose.service: celery
     spec:
       containers:
-      - name: celery-worker
-        image: joelinhoastron747/django_blog:latest
-        command: ["celery", "-A", "blog_project", "worker", "--loglevel=info"]
-        env:
-        - name: DJANGO_SETTINGS_MODULE
-          value: blog_project.settings
-        - name: DATABASE_HOST
-          value: mysql
-        - name: DATABASE_NAME
-          value: blog_post
-        - name: DATABASE_USER
-          value: root
-        - name: DATABASE_PASSWORD
-          value: root
-        - name: CELERY_BROKER_URL
-          value: amqp://usebr:password@rabbitmq:5672//
-        volumeMounts:
-        - mountPath: /app/media
-          name: media-pvc
+        - args:
+            - celery
+            - -A
+            - blog_project
+            - worker
+            - --loglevel=info
+          env:
+            - name: CELERY_BROKER_URL
+              value: amqp://usebr:password@rabbitmq:5672//
+            - name: DATABASE_HOST
+              value: db
+            - name: DATABASE_NAME
+              value: blog_post
+            - name: DATABASE_PASSWORD
+              value: root
+            - name: DATABASE_USER
+              value: root
+            - name: DJANGO_SETTINGS_MODULE
+              value: blog_project.settings
+          image: celery
+          name: django-celery
+          resources: {}
+          volumeMounts:
+            - mountPath: /app
+              name: celery-claim0
+            - mountPath: /app/media
+              name: celery-claim1
+          workingDir: /app
+      restartPolicy: Always
       volumes:
-      - name: media-pvc
-        persistentVolumeClaim:
-          claimName: media-pvc
+        - name: celery-claim0
+          persistentVolumeClaim:
+            claimName: celery-claim0
+        - name: celery-claim1
+          persistentVolumeClaim:
+            claimName: celery-claim1
